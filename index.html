@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Details Form with 2Factor OTP</title>
+  <title>User Details Form with OTP</title>
   <style>
     * {
       box-sizing: border-box;
@@ -17,6 +17,7 @@
       padding: 20px;
       min-height: 100vh;
       margin: 0;
+      position: relative;
     }
     .form-container {
       background: #fff;
@@ -25,7 +26,14 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       width: 100%;
       max-width: 450px;
+       position: relative;
     }
+    .whatsapp-top {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+}
     h2 {
       text-align: center;
       color: #2d3436;
@@ -92,12 +100,28 @@
         font-size: 14px;
       }
     }
+  
+    .whatsapp-top img {
+      width: 45px;
+      height: 45px;
+      cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
 
+
 <div class="form-container">
+
+  <!-- WhatsApp Button Top Right -->
+<a href="https://wa.me/8688661039" target="_blank" class="whatsapp-top" title="Chat with us on WhatsApp">
+  <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" />
+</a>
+
   <h2>User Registration</h2>
+
   <form id="userForm" method="POST" action="https://script.google.com/macros/s/AKfycbyn8reU3Fq9HWjvBZ6Pr8WxE2iwTJl4NVdAV03wecs82VlSb8G8uzV61DTgRdb6t_gh/exec">
     <label for="name">Name</label>
     <input type="text" id="name" name="name" required>
@@ -133,7 +157,7 @@
 
 <script>
   let sessionId = "";
-  const apiKey = "f8866e3f-6916-11f0-a562-0200cd936042"; // ✅ Moved here for global access
+  const apiKey = "f8866e3f-6916-11f0-a562-0200cd936042"; // ✅ Working API key
 
   function showToast(message) {
     const toast = document.getElementById("toast");
@@ -142,48 +166,46 @@
     setTimeout(() => toast.style.display = "none", 3000);
   }
 
-async function sendOTP() {
-  const phone = document.getElementById('phone').value;
-  const sendBtn = document.querySelector("button[onclick='sendOTP()']");
+  async function sendOTP() {
+    const phone = document.getElementById('phone').value;
+    const sendBtn = document.querySelector("button[onclick='sendOTP()']");
 
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    alert("Please enter a valid 10-digit Indian phone number.");
-    return;
-  }
-
-  // Disable the button and start timer
-  sendBtn.disabled = true;
-  let countdown = 30;
-  sendBtn.textContent = `Resend OTP in ${countdown}s`;
-
-  const timer = setInterval(() => {
-    countdown--;
-    if (countdown > 0) {
-      sendBtn.textContent = `Resend OTP in ${countdown}s`;
-    } else {
-      clearInterval(timer);
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send OTP";
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      alert("Please enter a valid 10-digit Indian phone number.");
+      return;
     }
-  }, 1000);
 
-  // Send OTP via API
-  const url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phone}/AUTOGEN`;
+    sendBtn.disabled = true;
+    let countdown = 30;
+    sendBtn.textContent = `Resend OTP in ${countdown}s`;
 
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.Status === "Success") {
-      sessionId = data.Details;
-      document.getElementById('otpSection').style.display = 'block';
-      showToast("OTP sent successfully!");
-    } else {
-      alert("Failed to send OTP: " + data.Details);
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        sendBtn.textContent = `Resend OTP in ${countdown}s`;
+      } else {
+        clearInterval(timer);
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send OTP";
+      }
+    }, 1000);
+
+    const url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phone}/AUTOGEN`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.Status === "Success") {
+        sessionId = data.Details;
+        document.getElementById('otpSection').style.display = 'block';
+        showToast("OTP sent successfully via SMS");
+      } else {
+        alert("Failed to send OTP: " + data.Details);
+      }
+    } catch (error) {
+      alert("Error sending OTP: " + error.message);
     }
-  } catch (error) {
-    alert("Error sending OTP: " + error.message);
   }
-}
 
   document.getElementById("userForm").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -241,7 +263,6 @@ async function sendOTP() {
     }
   });
 </script>
-
 
 </body>
 </html>
