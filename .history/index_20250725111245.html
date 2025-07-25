@@ -142,48 +142,29 @@
     setTimeout(() => toast.style.display = "none", 3000);
   }
 
-async function sendOTP() {
-  const phone = document.getElementById('phone').value;
-  const sendBtn = document.querySelector("button[onclick='sendOTP()']");
-
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    alert("Please enter a valid 10-digit Indian phone number.");
-    return;
-  }
-
-  // Disable the button and start timer
-  sendBtn.disabled = true;
-  let countdown = 30;
-  sendBtn.textContent = `Resend OTP in ${countdown}s`;
-
-  const timer = setInterval(() => {
-    countdown--;
-    if (countdown > 0) {
-      sendBtn.textContent = `Resend OTP in ${countdown}s`;
-    } else {
-      clearInterval(timer);
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send OTP";
+  async function sendOTP() {
+    const phone = document.getElementById('phone').value;
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      alert("Please enter a valid 10-digit Indian phone number.");
+      return;
     }
-  }, 1000);
 
-  // Send OTP via API
-  const url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phone}/AUTOGEN`;
+    const url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phone}/AUTOGEN`;
 
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.Status === "Success") {
-      sessionId = data.Details;
-      document.getElementById('otpSection').style.display = 'block';
-      showToast("OTP sent successfully!");
-    } else {
-      alert("Failed to send OTP: " + data.Details);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.Status === "Success") {
+        sessionId = data.Details;
+        document.getElementById('otpSection').style.display = 'block';
+        showToast("OTP sent successfully!");
+      } else {
+        alert("Failed to send OTP: " + data.Details);
+      }
+    } catch (error) {
+      alert("Error sending OTP: " + error.message);
     }
-  } catch (error) {
-    alert("Error sending OTP: " + error.message);
   }
-}
 
   document.getElementById("userForm").addEventListener("submit", async function(event) {
     event.preventDefault();
